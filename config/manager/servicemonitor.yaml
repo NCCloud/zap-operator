@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: zap-operator
+  namespace: zap-system
+  labels:
+    release: kube-prometheus-stack
+spec:
+  selector:
+    matchLabels:
+      app: zap-operator
+  namespaceSelector:
+    matchNames:
+      - zap-system
+  endpoints:
+    - port: metrics
+      interval: 15s
+      path: /metrics

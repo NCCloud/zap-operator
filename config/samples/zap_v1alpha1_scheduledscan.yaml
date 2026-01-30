@@ -1,0 +1,13 @@
+apiVersion: spaceship.com/v1alpha1
+kind: ZapScheduledScan
+metadata:
+  name: example-scheduledscan
+spec:
+  schedule: "*/30 * * * *"
+  concurrencyPolicy: Forbid
+  template:
+    target: https://example.com
+    # openapi: https://example.com/openapi.json
+    args:
+      - "-a"
+    cleanup: true

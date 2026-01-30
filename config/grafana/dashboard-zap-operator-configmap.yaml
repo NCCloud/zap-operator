@@ -1,0 +1,779 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-zap-operator
+  namespace: monitoring
+  labels:
+    grafana_dashboard: '1'
+data:
+  zap-operator-scan-results.json: |
+    {
+      "uid": "zap-operator-scan",
+      "title": "ZAP Operator - Scan Results",
+      "timezone": "browser",
+      "schemaVersion": 39,
+      "version": 27,
+      "tags": ["zap", "security", "operator"],
+      "refresh": "30s",
+      "time": {
+        "from": "now-6h",
+        "to": "now"
+      },
+      "annotations": {
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": {
+              "type": "grafana",
+              "uid": "-- Grafana --"
+            },
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
+      },
+      "templating": {
+        "list": [
+          {
+            "name": "namespace",
+            "type": "query",
+            "datasource": {
+              "type": "prometheus",
+              "uid": "prometheus"
+            },
+            "query": {
+              "query": "label_values(zap_operator_alerts_found_total, scan_namespace)",
+              "refId": "StandardVariableQuery"
+            },
+            "refresh": 1,
+            "sort": 1,
+            "multi": true,
+            "includeAll": true,
+            "allValue": ".*",
+            "current": {
+              "selected": true,
+              "text": "All",
+              "value": "$__all"
+            }
+          },
+          {
+            "name": "target",
+            "type": "query",
+            "datasource": {
+              "type": "prometheus",
+              "uid": "prometheus"
+            },
+            "query": {
+              "query": "label_values(zap_operator_alerts_found_total{scan_namespace=~\"$namespace\"}, scan_target)",
+              "refId": "StandardVariableQuery"
+            },
+            "refresh": 1,
+            "sort": 1,
+            "multi": true,
+            "includeAll": true,
+            "allValue": ".*",
+            "current": {
+              "selected": true,
+              "text": "All",
+              "value": "$__all"
+            }
+          },
+          {
+            "name": "risk",
+            "type": "custom",
+            "query": "high,medium,low,informational",
+            "multi": true,
+            "includeAll": true,
+            "allValue": ".*",
+            "current": {
+              "selected": true,
+              "text": "All",
+              "value": "$__all"
+            }
+          }
+        ]
+      },
+      "panels": [
+        {
+          "id": 1,
+          "type": "stat",
+          "title": "Total Alerts (Selected)",
+          "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(zap_operator_alerts_found_total{scan_namespace=~\"$namespace\", scan_target=~\"$target\", risk=~\"$risk\"})"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 1},
+                  {"color": "red", "value": 10}
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "orientation": "horizontal",
+            "textMode": "auto",
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "id": 2,
+          "type": "stat",
+          "title": "High Risk Alerts",
+          "gridPos": {"x": 6, "y": 0, "w": 6, "h": 4},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(zap_operator_alerts_found_total{scan_namespace=~\"$namespace\", scan_target=~\"$target\", risk=\"high\"})"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 1},
+                  {"color": "red", "value": 5}
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "orientation": "horizontal",
+            "textMode": "auto",
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "id": 3,
+          "type": "stat",
+          "title": "Medium Risk Alerts",
+          "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(zap_operator_alerts_found_total{scan_namespace=~\"$namespace\", scan_target=~\"$target\", risk=\"medium\"})"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 1},
+                  {"color": "orange", "value": 10}
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "orientation": "horizontal",
+            "textMode": "auto",
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "id": 4,
+          "type": "stat",
+          "title": "Low Risk Alerts",
+          "gridPos": {"x": 18, "y": 0, "w": 3, "h": 4},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(zap_operator_alerts_found_total{scan_namespace=~\"$namespace\", scan_target=~\"$target\", risk=\"low\"})"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 1}
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "orientation": "horizontal",
+            "textMode": "auto",
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "id": 12,
+          "type": "stat",
+          "title": "Informational Alerts",
+          "gridPos": {"x": 21, "y": 0, "w": 3, "h": 4},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(zap_operator_alerts_found_total{scan_namespace=~\"$namespace\", scan_target=~\"$target\", risk=\"informational\"})"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "blue", "value": null}
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "orientation": "horizontal",
+            "textMode": "auto",
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "id": 8,
+          "type": "piechart",
+          "title": "Risk Distribution (Selected)",
+          "gridPos": {"x": 0, "y": 4, "w": 8, "h": 7},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by (risk) (zap_operator_alerts_found_total{scan_namespace=~\"$namespace\", scan_target=~\"$target\"})",
+              "instant": true
+            }
+          ],
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "displayLabels": ["percent"],
+            "legend": {"displayMode": "list", "placement": "right"},
+            "pieType": "pie",
+            "tooltip": {"mode": "single"}
+          }
+        },
+        {
+          "id": 9,
+          "type": "table",
+          "title": "Top Targets (6h increase)",
+          "gridPos": {"x": 8, "y": 4, "w": 8, "h": 7},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "topk(10, sum by (scan_target) (increase(zap_operator_alerts_found_total{scan_namespace=~\"$namespace\", risk=~\"$risk\"}[6h])))",
+              "format": "table",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "custom": {"align": "auto"}
+            },
+            "overrides": []
+          },
+          "transformations": [
+            {
+              "id": "labelsToFields",
+              "options": {}
+            },
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true,
+                  "__name__": true
+                },
+                "indexByName": {
+                  "scan_target": 0,
+                  "Value": 1
+                },
+                "renameByName": {
+                  "Value": "alerts"
+                }
+              }
+            },
+            {
+              "id": "sortBy",
+              "options": {
+                "fields": {},
+                "sort": [
+                  {
+                    "field": "alerts",
+                    "desc": true
+                  }
+                ]
+              }
+            }
+          ],
+          "options": {"showHeader": true}
+        },
+        {
+          "id": 10,
+          "type": "timeseries",
+          "title": "High Risk Trend (no high-risk alerts yet)",
+          "gridPos": {"x": 16, "y": 4, "w": 8, "h": 7},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(increase(zap_operator_alerts_found_total{scan_namespace=~\"$namespace\", scan_target=~\"$target\", risk=\"high\"}[6h]))"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": {"drawStyle": "line", "lineInterpolation": "smooth", "lineWidth": 2, "fillOpacity": 10}
+            },
+            "overrides": []
+          },
+          "options": {"legend": {"displayMode": "hidden"}, "tooltip": {"mode": "single"}}
+        },
+        {
+          "id": 5,
+          "type": "timeseries",
+          "title": "Alerts Over Time (by Risk)",
+          "gridPos": {"x": 0, "y": 11, "w": 24, "h": 8},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by (risk) (increase(zap_operator_alerts_found_total{scan_namespace=~\"$namespace\", scan_target=~\"$target\"}[6h]))"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "fillOpacity": 10,
+                "stacking": {"mode": "normal", "group": "A"}
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {"id": "byName", "options": "high"},
+                "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]
+              },
+              {
+                "matcher": {"id": "byName", "options": "medium"},
+                "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "orange"}}]
+              },
+              {
+                "matcher": {"id": "byName", "options": "low"},
+                "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "yellow"}}]
+              },
+              {
+                "matcher": {"id": "byName", "options": "informational"},
+                "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "blue"}}]
+              }
+            ]
+          },
+          "options": {
+            "legend": {"displayMode": "table", "placement": "bottom"},
+            "tooltip": {"mode": "multi"}
+          }
+        },
+        {
+          "id": 11,
+          "type": "table",
+          "title": "Top Plugins",
+          "gridPos": {"x": 0, "y": 19, "w": 24, "h": 8},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "topk(15, sum by (plugin_id) (zap_operator_alerts_found_total{scan_namespace=~\"$namespace\", scan_target=~\"$target\", risk=~\"$risk\"}))",
+              "format": "table",
+              "instant": true
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "custom": {
+                "align": "auto",
+                "inspect": true
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {"id": "byName", "options": "plugin_id"},
+                "properties": [
+                  {
+                    "id": "links",
+                    "value": [
+                      {
+                        "title": "View on ZAP Docs",
+                        "url": "https://www.zaproxy.org/docs/alerts/${__value.raw}/",
+                        "targetBlank": true
+                      }
+                    ]
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  },
+                  {
+                    "id": "color",
+                    "value": {
+                      "mode": "fixed",
+                      "fixedColor": "super-light-blue"
+                    }
+                  },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "regex",
+                        "options": {
+                          "pattern": "(.*)",
+                          "result": {
+                            "text": "$1 ↗",
+                            "index": 0
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "transformations": [
+            {
+              "id": "labelsToFields",
+              "options": {}
+            },
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true,
+                  "__name__": true
+                },
+                "indexByName": {
+                  "plugin_id": 0,
+                  "Value": 1
+                },
+                "renameByName": {
+                  "Value": "alerts"
+                }
+              }
+            },
+            {
+              "id": "sortBy",
+              "options": {
+                "fields": {},
+                "sort": [
+                  {
+                    "field": "alerts",
+                    "desc": true
+                  }
+                ]
+              }
+            }
+          ],
+          "options": {
+            "showHeader": true,
+            "cellHeight": "sm"
+          }
+        },
+        {
+          "id": 13,
+          "type": "stat",
+          "title": "Total Scans",
+          "gridPos": {"x": 0, "y": 27, "w": 6, "h": 4},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(zap_operator_scan_runs_total{scan_namespace=~\"$namespace\", scan_target=~\"$target\"})"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "blue", "value": null}
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "orientation": "horizontal",
+            "textMode": "auto",
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "id": 14,
+          "type": "stat",
+          "title": "Successful Scans",
+          "gridPos": {"x": 6, "y": 27, "w": 6, "h": 4},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(zap_operator_scan_runs_total{scan_namespace=~\"$namespace\", scan_target=~\"$target\", status=\"succeeded\"})"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null}
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "orientation": "horizontal",
+            "textMode": "auto",
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "id": 15,
+          "type": "stat",
+          "title": "Failed Scans",
+          "gridPos": {"x": 12, "y": 27, "w": 6, "h": 4},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(zap_operator_scan_runs_total{scan_namespace=~\"$namespace\", scan_target=~\"$target\", status=\"failed\"})"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "red", "value": 1}
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "orientation": "horizontal",
+            "textMode": "auto",
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "id": 16,
+          "type": "stat",
+          "title": "Scans In Progress",
+          "gridPos": {"x": 18, "y": 27, "w": 6, "h": 4},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(zap_operator_scans_in_progress{scan_namespace=~\"$namespace\"})"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "blue", "value": null}
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "orientation": "horizontal",
+            "textMode": "auto",
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "id": 17,
+          "type": "timeseries",
+          "title": "Scan Duration Over Time",
+          "gridPos": {"x": 0, "y": 31, "w": 12, "h": 7},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "zap_operator_last_scan_duration_seconds{scan_namespace=~\"$namespace\", scan_target=~\"$target\"}",
+              "legendFormat": "{{scan_target}}"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "custom": {"drawStyle": "line", "lineInterpolation": "stepAfter", "lineWidth": 2, "fillOpacity": 10, "pointSize": 5, "showPoints": "always"}
+            },
+            "overrides": []
+          },
+          "options": {
+            "legend": {"displayMode": "list", "placement": "bottom"},
+            "tooltip": {"mode": "multi"}
+          }
+        },
+        {
+          "id": 18,
+          "type": "stat",
+          "title": "Avg Scan Duration",
+          "gridPos": {"x": 12, "y": 31, "w": 6, "h": 7},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(zap_operator_scan_duration_seconds_sum{scan_namespace=~\"$namespace\", scan_target=~\"$target\"}) / sum(zap_operator_scan_duration_seconds_count{scan_namespace=~\"$namespace\", scan_target=~\"$target\"})"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 600},
+                  {"color": "orange", "value": 1800}
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "orientation": "horizontal",
+            "textMode": "auto",
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "id": 19,
+          "type": "stat",
+          "title": "Last Scan",
+          "gridPos": {"x": 18, "y": 31, "w": 6, "h": 7},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "max(zap_operator_last_scan_timestamp_seconds{scan_namespace=~\"$namespace\", scan_target=~\"$target\"}) * 1000"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "unit": "dateTimeFromNow",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null}
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "orientation": "horizontal",
+            "textMode": "auto",
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "id": 7,
+          "type": "table",
+          "title": "Alerts by Target + Risk",
+          "gridPos": {"x": 0, "y": 38, "w": 24, "h": 8},
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sort_desc(sum by (scan_target, risk) (zap_operator_alerts_found_total{scan_namespace=~\"$namespace\", scan_target=~\"$target\"}))",
+              "format": "table",
+              "instant": true
+            }
+          ],
+          "options": {
+            "showHeader": true
+          },
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "align": "auto"
+              }
+            },
+            "overrides": []
+          }
+        }
+      ]
+    }

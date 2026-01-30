@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zap-operator
+  namespace: zap-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zap-operator
+  template:
+    metadata:
+      labels:
+        app: zap-operator
+    spec:
+      serviceAccountName: zap-operator
+      containers:
+        - name: manager
+          image: zap-operator:local
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--metrics-bind-address=:8080"
+            - "--health-probe-bind-address=:8081"
+          ports:
+            - name: metrics
+              containerPort: 8080
+            - name: health
+              containerPort: 8081

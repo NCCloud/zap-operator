@@ -1,0 +1,23 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: /
+    schedule:
+      day: "friday"
+      time: "11:00"
+      interval: "weekly"
+      timezone: "Europe/Rome"
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      day: "friday"
+      time: "11:00"
+      interval: "weekly"
+      timezone: "Europe/Rome"
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      day: "friday"
+      time: "11:00"
+      interval: "weekly"
+      timezone: "Europe/Rome"

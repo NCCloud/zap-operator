@@ -1,0 +1,10 @@
+apiVersion: spaceship.com/v1alpha1
+kind: ZapScan
+metadata:
+  name: example-scan
+spec:
+  target: https://example.com
+  # openapi: https://example.com/openapi.json
+  args:
+    - "-a" # aggressive
+  cleanup: true
