@@ -1,0 +1,18 @@
+# Configuration for go-test-coverage
+# https://github.com/vladopajic/go-test-coverage
+
+# Path to coverage profile file
+profile: cover.out
+
+# Coverage thresholds
+threshold:
+  # Minimum overall project coverage percentage required
+  total: 80
+
+# Exclude paths from coverage statistics
+exclude:
+  paths:
+    # Exclude generated code
+    - zz_generated\..*\.go$  # Generated files (deepcopy, defaults, etc.)
+    # Exclude main package (hard to test without integration tests)
+    - ^cmd/
