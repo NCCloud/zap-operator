@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -9,11 +8,8 @@ import (
 
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func ptr[T any](v T) *T { return &v }
@@ -29,22 +25,6 @@ func jobNamespaceFor(scanNs string, jobNamespace *string) string {
 		return *jobNamespace
 	}
 	return scanNs
-}
-
-func getJob(ctx context.Context, c client.Client, nn types.NamespacedName) (*batchv1.Job, error) {
-	var job batchv1.Job
-	if err := c.Get(ctx, nn, &job); err != nil {
-		return nil, err
-	}
-	return &job, nil
-}
-
-func deleteJobIfRequested(ctx context.Context, c client.Client, job *batchv1.Job, cleanup *bool) error {
-	if cleanup == nil || !*cleanup {
-		return nil
-	}
-	policy := metav1.DeletePropagationBackground
-	return c.Delete(ctx, job, &client.DeleteOptions{PropagationPolicy: &policy})
 }
 
 func buildZapFullScanJob(jobName, scanNamespace, scanName string, specTarget string, openapi *string, image *string, extraArgs []string, saName *string) *batchv1.Job {
@@ -218,16 +198,4 @@ func jobFinishedTime(job *batchv1.Job) *metav1.Time {
 		}
 	}
 	return nil
-}
-
-func ensureJob(ctx context.Context, c client.Client, job *batchv1.Job) error {
-	var existing batchv1.Job
-	err := c.Get(ctx, types.NamespacedName{Name: job.Name, Namespace: job.Namespace}, &existing)
-	if err == nil {
-		return nil
-	}
-	if !errors.IsNotFound(err) {
-		return err
-	}
-	return c.Create(ctx, job)
 }

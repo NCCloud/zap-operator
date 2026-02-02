@@ -1,20 +1,12 @@
 package controller
 
 import (
-	"context"
-	"errors"
 	"testing"
 	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/kubernetes/scheme"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/client/fake"
-	"sigs.k8s.io/controller-runtime/pkg/client/interceptor"
 )
 
 func TestNormalizeRisk(t *testing.T) {
@@ -340,23 +332,6 @@ func findSubstring(s, substr string) bool {
 	return false
 }
 
-func TestDeleteJobIfRequested(t *testing.T) {
-	ctx := context.Background()
-
-	// Test with nil cleanup - should return nil
-	err := deleteJobIfRequested(ctx, nil, &batchv1.Job{}, nil)
-	if err != nil {
-		t.Errorf("expected nil error for nil cleanup, got %v", err)
-	}
-
-	// Test with false cleanup - should return nil
-	cleanup := false
-	err = deleteJobIfRequested(ctx, nil, &batchv1.Job{}, &cleanup)
-	if err != nil {
-		t.Errorf("expected nil error for false cleanup, got %v", err)
-	}
-}
-
 func TestJobFailedReason(t *testing.T) {
 	cases := []struct {
 		name string
@@ -424,179 +399,5 @@ func TestJobFailedReason(t *testing.T) {
 				t.Errorf("got %q, want %q", got, tc.want)
 			}
 		})
-	}
-}
-
-func TestJobKey(t *testing.T) {
-	job := &batchv1.Job{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test-job",
-			Namespace: "test-ns",
-		},
-	}
-
-	key := jobKey(job)
-	if key.Name != "test-job" {
-		t.Errorf("expected name 'test-job', got %q", key.Name)
-	}
-	if key.Namespace != "test-ns" {
-		t.Errorf("expected namespace 'test-ns', got %q", key.Namespace)
-	}
-}
-
-func TestFormatNN(t *testing.T) {
-	cases := []struct {
-		name string
-		nn   types.NamespacedName
-		want string
-	}{
-		{
-			name: "with namespace",
-			nn:   types.NamespacedName{Name: "my-resource", Namespace: "my-ns"},
-			want: "my-ns/my-resource",
-		},
-		{
-			name: "without namespace",
-			nn:   types.NamespacedName{Name: "my-resource"},
-			want: "my-resource",
-		},
-		{
-			name: "empty",
-			nn:   types.NamespacedName{},
-			want: "",
-		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			got := formatNN(tc.nn)
-			if got != tc.want {
-				t.Errorf("got %q, want %q", got, tc.want)
-			}
-		})
-	}
-}
-
-func TestGetJob(t *testing.T) {
-	ctx := context.Background()
-
-	s := runtime.NewScheme()
-	if err := scheme.AddToScheme(s); err != nil {
-		t.Fatalf("add scheme: %v", err)
-	}
-
-	existingJob := &batchv1.Job{
-		ObjectMeta: metav1.ObjectMeta{Name: "existing-job", Namespace: "ns1"},
-	}
-
-	c := fake.NewClientBuilder().WithScheme(s).WithObjects(existingJob).Build()
-
-	// Test getting existing job
-	job, err := getJob(ctx, c, types.NamespacedName{Name: "existing-job", Namespace: "ns1"})
-	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
-	}
-	if job.Name != "existing-job" {
-		t.Errorf("expected job name 'existing-job', got %q", job.Name)
-	}
-
-	// Test getting non-existing job
-	_, err = getJob(ctx, c, types.NamespacedName{Name: "missing-job", Namespace: "ns1"})
-	if err == nil {
-		t.Error("expected error for missing job")
-	}
-}
-
-func TestEnsureJob(t *testing.T) {
-	ctx := context.Background()
-
-	s := runtime.NewScheme()
-	if err := scheme.AddToScheme(s); err != nil {
-		t.Fatalf("add scheme: %v", err)
-	}
-
-	existingJob := &batchv1.Job{
-		ObjectMeta: metav1.ObjectMeta{Name: "existing-job", Namespace: "ns1"},
-	}
-
-	c := fake.NewClientBuilder().WithScheme(s).WithObjects(existingJob).Build()
-
-	// Test ensuring existing job - should do nothing
-	job := &batchv1.Job{
-		ObjectMeta: metav1.ObjectMeta{Name: "existing-job", Namespace: "ns1"},
-	}
-	err := ensureJob(ctx, c, job)
-	if err != nil {
-		t.Fatalf("expected no error for existing job, got %v", err)
-	}
-
-	// Test ensuring new job - should create it
-	newJob := &batchv1.Job{
-		ObjectMeta: metav1.ObjectMeta{Name: "new-job", Namespace: "ns1"},
-	}
-	err = ensureJob(ctx, c, newJob)
-	if err != nil {
-		t.Fatalf("expected no error for new job, got %v", err)
-	}
-
-	// Verify it was created
-	var created batchv1.Job
-	err = c.Get(ctx, types.NamespacedName{Name: "new-job", Namespace: "ns1"}, &created)
-	if err != nil {
-		t.Fatalf("expected job to be created: %v", err)
-	}
-}
-
-func TestEnsureJob_GetError(t *testing.T) {
-	ctx := context.Background()
-	s := runtime.NewScheme()
-	_ = scheme.AddToScheme(s)
-
-	job := &batchv1.Job{
-		ObjectMeta: metav1.ObjectMeta{Name: "job1", Namespace: "ns1"},
-	}
-
-	// Client that fails on Get with an error other than NotFound
-	cl := fake.NewClientBuilder().WithScheme(s).WithInterceptorFuncs(interceptor.Funcs{
-		Get: func(ctx context.Context, client client.WithWatch, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
-			return errors.New("simulated get error")
-		},
-	}).Build()
-
-	err := ensureJob(ctx, cl, job)
-	if err == nil {
-		t.Error("expected error when Get fails")
-	}
-	if err.Error() != "simulated get error" {
-		t.Errorf("expected 'simulated get error', got %v", err)
-	}
-}
-
-func TestDeleteJobIfRequested_WithClient(t *testing.T) {
-	ctx := context.Background()
-
-	s := runtime.NewScheme()
-	if err := scheme.AddToScheme(s); err != nil {
-		t.Fatalf("add scheme: %v", err)
-	}
-
-	job := &batchv1.Job{
-		ObjectMeta: metav1.ObjectMeta{Name: "test-job", Namespace: "ns1"},
-	}
-
-	c := fake.NewClientBuilder().WithScheme(s).WithObjects(job).Build()
-
-	// Test with cleanup = true - should delete
-	cleanup := true
-	err := deleteJobIfRequested(ctx, c, job, &cleanup)
-	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
-	}
-
-	// Verify it was deleted
-	var deleted batchv1.Job
-	err = c.Get(ctx, types.NamespacedName{Name: "test-job", Namespace: "ns1"}, &deleted)
-	if err == nil {
-		t.Error("expected job to be deleted")
 	}
 }

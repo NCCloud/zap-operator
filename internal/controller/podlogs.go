@@ -2,13 +2,11 @@ package controller
 
 import (
 	"context"
-	"fmt"
 	"io"
 
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -46,15 +44,4 @@ func (r *ScanReconciler) getPodLogs(ctx context.Context, namespace, podName, con
 		return nil, err
 	}
 	return b, nil
-}
-
-func jobKey(job *batchv1.Job) types.NamespacedName {
-	return types.NamespacedName{Name: job.Name, Namespace: job.Namespace}
-}
-
-func formatNN(nn types.NamespacedName) string {
-	if nn.Namespace == "" {
-		return nn.Name
-	}
-	return fmt.Sprintf("%s/%s", nn.Namespace, nn.Name)
 }
