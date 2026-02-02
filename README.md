@@ -1,6 +1,6 @@
 # Zap Operator
 
-![Coverage](https://raw.githubusercontent.com/nccloud/zap-operator/badges/.badges/main/coverage.svg)
+![Coverage](https://raw.githubusercontent.com/NCCloud/zap-operator/badges/.badges/main/coverage.svg)
 
 Zap Operator is a Kubernetes operator that automates [OWASP ZAP](https://www.zaproxy.org/) security scanning of your applications. It provides Custom Resource Definitions (CRDs) for running on-demand and scheduled security scans directly within your Kubernetes cluster.
 
