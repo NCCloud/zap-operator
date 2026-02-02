@@ -30,14 +30,6 @@ type ScanReconciler struct {
 	// logsGetter allows tests to inject pod log contents.
 	// If nil, the reconciler uses its default implementation.
 	logsGetter podLogsGetter
-
-	// execGetter allows tests to inject file contents from pods.
-	// If nil, the reconciler uses its default implementation.
-	execGetter podExecGetter
-
-	// execRunner allows tests to inject command execution results.
-	// If nil, the reconciler uses its default implementation.
-	execRunner podExecRunner
 }
 
 func (r *ScanReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {

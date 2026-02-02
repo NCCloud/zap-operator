@@ -60,7 +60,7 @@ func TestSetupWithManager(t *testing.T) {
 }
 
 func TestRealExecAndLogsCoverage(t *testing.T) {
-	// This test attempts to call the real execInPod and getPodLogs functions
+	// This test attempts to call the real getPodLogs function
 	// to increase code coverage. It expects failures but traverses the code paths.
 
 	// Create a mock server that simulates K8s API for logs/exec
@@ -129,12 +129,6 @@ users:
 	}
 
 	ctx := context.TODO()
-
-	// Test execInPod
-	_, _, err = r.execInPod(ctx, "ns", "pod", "container", []string{"ls"})
-	if err == nil {
-		t.Error("expected error from execInPod (mock server rejects exec)")
-	}
 
 	// Test getPodLogs - Should SUCCEED now if using mock server (fallback path)
 	// If using envtest, it fails because pod doesn't exist.
