@@ -167,11 +167,8 @@ func (r *ScanReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 			}
 
 			for _, a := range alerts.ByPlugin {
-				notification.Alerts = append(notification.Alerts, AlertSummary{
-					PluginID: a.PluginID,
-					Risk:     a.Risk,
-					Count:    a.Count,
-				})
+				alertSummary := AlertSummary(a)
+				notification.Alerts = append(notification.Alerts, alertSummary)
 			}
 
 			notifier, err := NewNotifier(ctx, r.Client, scan.Namespace, scan.Spec.Notification)

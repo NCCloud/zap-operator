@@ -76,8 +76,10 @@ func (s *SlackNotifier) Send(ctx context.Context, n ScanNotification) error {
 	if err != nil {
 		return fmt.Errorf("failed to send slack message: %w", err)
 	}
-	defer resp.Body.Close()
-
+	err = resp.Body.Close()
+	if err != nil {
+		return fmt.Errorf("error while handling request: %w", err)
+	}
 	if resp.StatusCode >= 400 {
 		return fmt.Errorf("slack webhook returned status %d", resp.StatusCode)
 	}
