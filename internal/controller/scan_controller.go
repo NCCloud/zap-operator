@@ -124,6 +124,12 @@ func (r *ScanReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 		scan.Status.AlertsFound = int64(alerts.Total)
 	}
 
+	if *scan.Spec.Notification.Enabled {
+		notifErr := r.sendNotification(alerts)
+		if notifErr != nil {
+			log.Error(notifErr, fmt.Sprintf("Error while sending alerts via %s", scan.Spec.Notification.Protocol))
+		}
+	}
 	// Calculate scan duration
 	var durationSeconds float64
 	if scan.Status.StartedAt != nil && finishedAt != nil {
