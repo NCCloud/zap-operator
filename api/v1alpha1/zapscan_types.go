@@ -95,7 +95,7 @@ type NotificationSpec struct {
 	Url string `json:"url,omitempty"`
 	// Defines whether the notifications enabled or not
 	// +optionals
-	Enabled *bool `json:"enabled,omitempty"`
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 func init() {

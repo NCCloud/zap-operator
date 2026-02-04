@@ -123,13 +123,6 @@ func (r *ScanReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	} else {
 		scan.Status.AlertsFound = int64(alerts.Total)
 	}
-
-	if *scan.Spec.Notification.Enabled {
-		notifErr := r.sendNotification(alerts)
-		if notifErr != nil {
-			log.Error(notifErr, fmt.Sprintf("Error while sending alerts via %s", scan.Spec.Notification.Protocol))
-		}
-	}
 	// Calculate scan duration
 	var durationSeconds float64
 	if scan.Status.StartedAt != nil && finishedAt != nil {
@@ -161,6 +154,9 @@ func (r *ScanReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	if alerts != nil {
 		for _, a := range alerts.ByPlugin {
 			metrics.IncAlert(scan.Namespace, scan.Spec.Target, a.Risk, a.PluginID, a.Count)
+			if scan.Spec.Notification.Enabled {
+				// continue with the stack
+			}
 		}
 	}
 	metrics.IncScanRun(scan.Namespace, scan.Spec.Target, finalStatus)
