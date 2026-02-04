@@ -1,0 +1,116 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.20.0
+  name: zapscans.spaceship.com
+spec:
+  group: spaceship.com
+  names:
+    kind: ZapScan
+    listKind: ZapScanList
+    plural: zapscans
+    shortNames:
+    - zaps
+    singular: zapscan
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ZapScanSpec defines the desired state of ZapScan.
+            properties:
+              args:
+                description: Args are extra args passed to zap-full-scan script.
+                items:
+                  type: string
+                type: array
+              cleanup:
+                description: Cleanup controls whether completed Jobs should be deleted.
+                type: boolean
+              image:
+                description: Image is the container image to run. Defaults to ghcr.io/zaproxy/zaproxy:stable
+                type: string
+              jobNamespace:
+                description: Namespace to run the scan job in. Defaults to the Scan's
+                  namespace.
+                type: string
+              notification:
+                description: This is the address to send the zap scan output
+                properties:
+                  enabled:
+                    description: Defines whether the notifications enabled or not
+                    type: boolean
+                  protocol:
+                    description: Defines which protocol it needs like, slackWebhook,
+                      smtp(in the future)
+                    type: string
+                  url:
+                    description: Defines target url to push the outputs
+                    type: string
+                type: object
+              openapi:
+                description: |-
+                  OpenAPI is an optional URL or in-cluster path for an OpenAPI spec.
+                  If set, the zap-full-scan job will be asked to import it.
+                type: string
+              serviceAccountName:
+                description: ServiceAccountName used by the scan job.
+                type: string
+              target:
+                description: Target is the URL to scan (e.g. https://example.com)
+                type: string
+            required:
+            - target
+            type: object
+          status:
+            description: ZapScanStatus defines the observed state of ZapScan.
+            properties:
+              alertsFound:
+                description: AlertsFound is the total number of alerts parsed from
+                  results.
+                format: int64
+                type: integer
+              finishedAt:
+                description: FinishedAt is when the scan completed.
+                format: date-time
+                type: string
+              jobName:
+                description: JobName is the name of the Job created for this scan.
+                type: string
+              lastError:
+                description: LastError is a human-readable error if any.
+                type: string
+              phase:
+                description: Phase is a high-level state indicator.
+                type: string
+              startedAt:
+                description: StartedAt is when the scan job was created.
+                format: date-time
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

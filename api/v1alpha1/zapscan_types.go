@@ -33,6 +33,10 @@ type ZapScanSpec struct {
 	// Cleanup controls whether completed Jobs should be deleted.
 	// +optional
 	Cleanup *bool `json:"cleanup,omitempty"`
+
+	// This is the address to send the zap scan output
+	// +optional
+	Notification NotificationSpec `json:"notification,omitempty"`
 }
 
 // ZapScanStatus defines the observed state of ZapScan.
@@ -80,6 +84,18 @@ type ZapScanList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []ZapScan `json:"items"`
+}
+
+type NotificationSpec struct {
+	// Defines which protocol it needs like, slackWebhook, smtp(in the future)
+	// +optionals
+	Protocol string `json:"protocol,omitempty"`
+	// Defines target url to push the outputs
+	// +optionals
+	Url string `json:"url,omitempty"`
+	// Defines whether the notifications enabled or not
+	// +optionals
+	Enabled *bool `json:"enabled,omitempty"`
 }
 
 func init() {

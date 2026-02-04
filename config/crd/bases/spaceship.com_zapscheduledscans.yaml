@@ -1,0 +1,127 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.20.0
+  name: zapscheduledscans.spaceship.com
+spec:
+  group: spaceship.com
+  names:
+    kind: ZapScheduledScan
+    listKind: ZapScheduledScanList
+    plural: zapscheduledscans
+    shortNames:
+    - zapsched
+    singular: zapscheduledscan
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ZapScheduledScanSpec defines the desired state of ZapScheduledScan.
+            properties:
+              concurrencyPolicy:
+                description: |-
+                  ConcurrencyPolicy determines what happens if a previous run is still active.
+                  Allowed values: Allow, Forbid, Replace.
+                type: string
+              schedule:
+                description: Schedule is a cron expression in standard 5-field format
+                  (min hour dom mon dow).
+                type: string
+              suspend:
+                description: Suspend stops creating new Scan objects.
+                type: boolean
+              template:
+                description: Template defines the ZapScan spec that will be used to
+                  create ZapScan objects.
+                properties:
+                  args:
+                    description: Args are extra args passed to zap-full-scan script.
+                    items:
+                      type: string
+                    type: array
+                  cleanup:
+                    description: Cleanup controls whether completed Jobs should be
+                      deleted.
+                    type: boolean
+                  image:
+                    description: Image is the container image to run. Defaults to
+                      ghcr.io/zaproxy/zaproxy:stable
+                    type: string
+                  jobNamespace:
+                    description: Namespace to run the scan job in. Defaults to the
+                      Scan's namespace.
+                    type: string
+                  notification:
+                    description: This is the address to send the zap scan output
+                    properties:
+                      enabled:
+                        description: Defines whether the notifications enabled or
+                          not
+                        type: boolean
+                      protocol:
+                        description: Defines which protocol it needs like, slackWebhook,
+                          smtp(in the future)
+                        type: string
+                      url:
+                        description: Defines target url to push the outputs
+                        type: string
+                    type: object
+                  openapi:
+                    description: |-
+                      OpenAPI is an optional URL or in-cluster path for an OpenAPI spec.
+                      If set, the zap-full-scan job will be asked to import it.
+                    type: string
+                  serviceAccountName:
+                    description: ServiceAccountName used by the scan job.
+                    type: string
+                  target:
+                    description: Target is the URL to scan (e.g. https://example.com)
+                    type: string
+                required:
+                - target
+                type: object
+            required:
+            - schedule
+            - template
+            type: object
+          status:
+            description: ZapScheduledScanStatus defines the observed state of ZapScheduledScan.
+            properties:
+              active:
+                description: Active holds the names of currently active Scans.
+                items:
+                  type: string
+                type: array
+              lastScheduleTime:
+                description: LastScheduleTime is the last time a Scan was created
+                  from this schedule.
+                format: date-time
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
