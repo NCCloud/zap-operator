@@ -12,3 +12,6 @@ rules:
   - apiGroups: [""]
     resources: ["pods", "pods/log"]
     verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["secrets", "secret"]
+    verbs: ["get", "list", "watch"]

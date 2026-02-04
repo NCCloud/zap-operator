@@ -123,7 +123,6 @@ func (r *ScanReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	} else {
 		scan.Status.AlertsFound = int64(alerts.Total)
 	}
-
 	// Calculate scan duration
 	var durationSeconds float64
 	if scan.Status.StartedAt != nil && finishedAt != nil {
@@ -150,11 +149,34 @@ func (r *ScanReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 	if err := r.Status().Update(ctx, &scan); err != nil {
 		return ctrl.Result{}, err
 	}
-
 	// Now that status is persisted, emit metrics (won't be double-counted on retry)
 	if alerts != nil {
 		for _, a := range alerts.ByPlugin {
 			metrics.IncAlert(scan.Namespace, scan.Spec.Target, a.Risk, a.PluginID, a.Count)
+		}
+
+		// Send notification if enabled
+		if scan.Spec.Notification.Enabled {
+			notification := ScanNotification{
+				ScanName:    scan.Name,
+				Namespace:   scan.Namespace,
+				Target:      scan.Spec.Target,
+				Phase:       finalPhase,
+				TotalAlerts: alerts.Total,
+				Duration:    time.Duration(durationSeconds) * time.Second,
+			}
+
+			for _, a := range alerts.ByPlugin {
+				alertSummary := AlertSummary(a)
+				notification.Alerts = append(notification.Alerts, alertSummary)
+			}
+
+			notifier, err := NewNotifier(ctx, r.Client, scan.Namespace, scan.Spec.Notification)
+			if err != nil {
+				log.Error(err, "failed to create notifier")
+			} else if err := notifier.Send(ctx, notification); err != nil {
+				log.Error(err, "failed to send notification", "protocol", scan.Spec.Notification.Protocol)
+			}
 		}
 	}
 	metrics.IncScanRun(scan.Namespace, scan.Spec.Target, finalStatus)

@@ -33,6 +33,10 @@ type ZapScanSpec struct {
 	// Cleanup controls whether completed Jobs should be deleted.
 	// +optional
 	Cleanup *bool `json:"cleanup,omitempty"`
+
+	// This is the address to send the zap scan output
+	// +optional
+	Notification NotificationSpec `json:"notification,omitempty"`
 }
 
 // ZapScanStatus defines the observed state of ZapScan.
@@ -80,6 +84,30 @@ type ZapScanList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []ZapScan `json:"items"`
+}
+
+type NotificationSpec struct {
+	// Defines which protocol it needs: slack, email, pdf
+	// +optional
+	Protocol string `json:"protocol,omitempty"`
+	// Defines target url to push the outputs (used if SecretRef is not set)
+	// +optional
+	Url string `json:"url,omitempty"`
+	// SecretRef references a Secret containing the webhook URL or credentials
+	// The secret should have a key matching the protocol (e.g., "slack-webhook-url", "smtp-password")
+	// +optional
+	SecretRef *SecretKeySelector `json:"secretRef,omitempty"`
+	// Defines whether the notifications enabled or not
+	// +optional
+	Enabled bool `json:"enabled,omitempty"`
+}
+
+// SecretKeySelector selects a key from a Secret.
+type SecretKeySelector struct {
+	// Name of the Secret
+	Name string `json:"name"`
+	// Key within the Secret
+	Key string `json:"key"`
 }
 
 func init() {
