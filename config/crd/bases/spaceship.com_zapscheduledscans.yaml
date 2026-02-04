@@ -81,11 +81,27 @@ spec:
                           not
                         type: boolean
                       protocol:
-                        description: Defines which protocol it needs like, slackWebhook,
-                          smtp(in the future)
+                        description: 'Defines which protocol it needs: slack, email,
+                          pdf'
                         type: string
+                      secretRef:
+                        description: |-
+                          SecretRef references a Secret containing the webhook URL or credentials
+                          The secret should have a key matching the protocol (e.g., "slack-webhook-url", "smtp-password")
+                        properties:
+                          key:
+                            description: Key within the Secret
+                            type: string
+                          name:
+                            description: Name of the Secret
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
                       url:
-                        description: Defines target url to push the outputs
+                        description: Defines target url to push the outputs (used
+                          if SecretRef is not set)
                         type: string
                     type: object
                   openapi:
