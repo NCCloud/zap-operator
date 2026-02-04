@@ -30,7 +30,7 @@ helm install zap-operator nccloud/zap-operator
 Create a `ZapScan` resource to run a one-time security scan:
 
 ```yaml
-apiVersion: zap.spaceship.com/v1alpha1
+apiVersion: spaceship.com/v1alpha1
 kind: ZapScan
 metadata:
   name: example-scan
@@ -43,7 +43,7 @@ spec:
 Create a `ZapScheduledScan` resource to run scans on a schedule:
 
 ```yaml
-apiVersion: zap.spaceship.com/v1alpha1
+apiVersion: spaceship.com/v1alpha1
 kind: ZapScheduledScan
 metadata:
   name: nightly-scan
