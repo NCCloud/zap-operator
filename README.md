@@ -2,11 +2,11 @@
 
 ![Coverage](https://raw.githubusercontent.com/NCCloud/zap-operator/badges/.badges/main/coverage.svg)
 
-Zap Operator is a Kubernetes operator that automates [OWASP ZAP](https://www.zaproxy.org/) security scanning of your applications. It provides Custom Resource Definitions (CRDs) for running on-demand and scheduled security scans directly within your Kubernetes cluster.
+Zap Operator is a Kubernetes operator that automates [ZAP](https://www.zaproxy.org/) security scanning of your applications. It provides Custom Resource Definitions (CRDs) for running on-demand and scheduled security scans directly within your Kubernetes cluster.
 
 ## Motivation
 
-Security scanning is a critical part of the software development lifecycle. OWASP ZAP is one of the most popular open-source security testing tools, but integrating it into Kubernetes-native workflows can be challenging.
+Security scanning is a critical part of the software development lifecycle. ZAP is one of the most popular open-source security testing tools, but integrating it into Kubernetes-native workflows can be challenging.
 
 Zap Operator solves this by:
 
